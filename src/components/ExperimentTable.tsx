@@ -5,7 +5,7 @@ import { applyFilters } from '../utils/filters'
 import { INPUT_FIELDS, OUTPUT_FIELDS, getValue } from '../utils/fields'
 
 const ALL_COLUMNS = [...INPUT_FIELDS, ...OUTPUT_FIELDS]
-const PAGE_SIZE = 100
+const PAGE_SIZE = 10
 
 export function ExperimentTable() {
   const filters = useAppStore((s) => s.filters)
@@ -22,7 +22,9 @@ export function ExperimentTable() {
   return (
     <div className="flex flex-col gap-3">
       <p className="text-sm text-gray-500">
-        Showing {filtered.length} of {allExperiments.length} experiments
+        Showing {visible.length} of {allExperiments.length} experiments
+        {filtered.length < allExperiments.length && ` (${filtered.length} match filters)`}
+        {pageCount > 1 && ` · Page ${page + 1} of ${pageCount}`}
       </p>
 
       {filtered.length === 0 ? (
@@ -35,7 +37,7 @@ export function ExperimentTable() {
             <table className="min-w-full text-sm">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="sticky left-0 bg-gray-50 px-3 py-2 text-left font-medium text-gray-700">
+                  <th className="sticky left-0 z-10 bg-gray-50 px-3 py-2 text-left font-medium text-gray-700">
                     ID
                   </th>
                   {ALL_COLUMNS.map((col) => (
@@ -59,10 +61,10 @@ export function ExperimentTable() {
                         'cursor-pointer border-t border-gray-100 transition-colors',
                         isSelected
                           ? 'bg-blue-50 hover:bg-blue-100'
-                          : 'hover:bg-gray-50',
+                          : 'bg-white hover:bg-gray-50',
                       ].join(' ')}
                     >
-                      <td className="sticky left-0 bg-inherit px-3 py-2 font-mono text-xs text-gray-500">
+                      <td className="sticky left-0 z-10 bg-inherit px-3 py-2 font-mono text-xs text-gray-500">
                         {exp.id}
                       </td>
                       {ALL_COLUMNS.map((col) => (
