@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type { Filter, FieldName } from '../types/index'
-import { INPUT_FIELDS, OUTPUT_FIELDS } from '../utils/fields'
+import { INPUT_FIELDS, OUTPUT_FIELDS, getValue } from '../utils/fields'
+import { allExperiments } from '../data/dataset'
 
 interface AppState {
   selectedExperimentId: string | null
@@ -27,7 +28,12 @@ export const useAppStore = create<AppState>((set) => ({
     set((state) => ({
       filters: [
         ...state.filters,
-        { id: crypto.randomUUID(), field: INPUT_FIELDS[0], operator: '>', value: 0 },
+        (() => {
+          const field = INPUT_FIELDS[0]
+          const vals = allExperiments.map((e) => getValue(e, field))
+          const mid = (Math.min(...vals) + Math.max(...vals)) / 2
+          return { id: crypto.randomUUID(), field, operator: '>' as const, value: mid }
+        })(),
       ],
     })),
   updateFilter: (id, patch) =>
