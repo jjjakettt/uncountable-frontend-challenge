@@ -49,19 +49,10 @@ describe('ExperimentDetailPanel', () => {
     useAppStore.setState({ selectedExperimentId: exp.id })
     render(<ExperimentDetailPanel />)
 
-    for (const field of INPUT_FIELDS) {
-      const val = exp.inputs[field]
-      if (val === 0) {
-        // At least one "not used" should appear
-      } else {
-        expect(screen.getAllByText(String(val)).length).toBeGreaterThan(0)
-      }
-    }
-    // Confirm "not used" appears at least once if any zero input
-    const hasZeroInput = INPUT_FIELDS.some((f) => exp.inputs[f] === 0)
-    if (hasZeroInput) {
-      expect(screen.getAllByText('not used').length).toBeGreaterThan(0)
-    }
+    INPUT_FIELDS.filter((f) => exp.inputs[f] !== 0).forEach((f) => {
+      expect(screen.getAllByText(String(exp.inputs[f])).length).toBeGreaterThan(0)
+    })
+    expect(screen.getAllByText('not used').length).toBeGreaterThan(0)
   })
 
   it('clicking Close button sets selectedExperimentId to null', () => {

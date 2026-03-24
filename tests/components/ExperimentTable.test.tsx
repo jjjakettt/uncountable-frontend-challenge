@@ -38,7 +38,6 @@ describe('ExperimentTable', () => {
     render(<ExperimentTable />)
     const rows = screen.getAllByRole('row')
     const selectedRow = rows.find((r) => r.classList.contains('bg-blue-50'))
-    expect(selectedRow).toBeTruthy()
     expect(selectedRow).toHaveTextContent(exp.id)
   })
 

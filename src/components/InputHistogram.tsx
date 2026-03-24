@@ -1,5 +1,5 @@
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
-import type { HistogramConfig } from '../types/index'
+import type { HistogramConfig, HistogramBin } from '../types/index'
 import { computeHistogram } from '../utils/histogram'
 import { allExperiments } from '../data/dataset'
 import { useAppStore } from '../store/useAppStore'
@@ -25,8 +25,7 @@ export function InputHistogram({ config }: Props) {
 
   function handleBarClick(experimentIds: string[]) {
     if (experimentIds.length === 0) return
-    const allSelected = experimentIds.every((id) => id === selectedId)
-    if (allSelected) {
+    if (experimentIds.includes(selectedId ?? '')) {
       setSelected(null)
     } else {
       setSelected(experimentIds[0])
@@ -51,7 +50,7 @@ export function InputHistogram({ config }: Props) {
         <Bar
           dataKey="count"
           cursor="pointer"
-          onClick={(data: any) => handleBarClick(data.experimentIds ?? [])}
+          onClick={(data: HistogramBin) => handleBarClick(data.experimentIds)}
         >
           {bins.map((bin, i) => {
             const isSelected = bin.experimentIds.includes(selectedId ?? '')

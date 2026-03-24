@@ -1,7 +1,7 @@
 import { useAppStore } from '../store/useAppStore'
 import { allExperiments } from '../data/dataset'
 import { applyFilters } from '../utils/filters'
-import { INPUT_FIELDS, OUTPUT_FIELDS } from '../utils/fields'
+import { INPUT_FIELDS, OUTPUT_FIELDS, getValue } from '../utils/fields'
 
 const ALL_COLUMNS = [...INPUT_FIELDS, ...OUTPUT_FIELDS]
 
@@ -54,16 +54,11 @@ export function ExperimentTable() {
                     <td className="sticky left-0 bg-inherit px-3 py-2 font-mono text-xs text-gray-500">
                       {exp.id}
                     </td>
-                    {ALL_COLUMNS.map((col) => {
-                      const val = INPUT_FIELDS.includes(col as typeof INPUT_FIELDS[number])
-                        ? exp.inputs[col as typeof INPUT_FIELDS[number]]
-                        : exp.outputs[col as typeof OUTPUT_FIELDS[number]]
-                      return (
-                        <td key={col} className="px-3 py-2 tabular-nums text-gray-800">
-                          {val ?? '—'}
-                        </td>
-                      )
-                    })}
+                    {ALL_COLUMNS.map((col) => (
+                      <td key={col} className="px-3 py-2 tabular-nums text-gray-800">
+                        {getValue(exp, col)}
+                      </td>
+                    ))}
                   </tr>
                 )
               })}
