@@ -1,5 +1,6 @@
+import { useMemo } from 'react'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
-import type { HistogramConfig, HistogramBin } from '../types/index'
+import type { HistogramConfig } from '../types/index'
 import { computeHistogram } from '../utils/histogram'
 import { allExperiments } from '../data/dataset'
 import { useAppStore } from '../store/useAppStore'
@@ -12,7 +13,7 @@ export function InputHistogram({ config }: Props) {
   const selectedId = useAppStore((s) => s.selectedExperimentId)
   const setSelected = useAppStore((s) => s.setSelectedExperiment)
 
-  const bins = computeHistogram(allExperiments, config)
+  const bins = useMemo(() => computeHistogram(allExperiments, config), [config])
   const hasData = bins.some((b) => b.count > 0)
 
   if (!hasData) {
@@ -47,16 +48,13 @@ export function InputHistogram({ config }: Props) {
           formatter={(value) => [value, 'Count']}
           labelFormatter={(label) => `Range: ${label}`}
         />
-        <Bar
-          dataKey="count"
-          cursor="pointer"
-          onClick={(data: HistogramBin) => handleBarClick(data.experimentIds)}
-        >
+        <Bar dataKey="count" cursor="pointer">
           {bins.map((bin, i) => {
             const isSelected = bin.experimentIds.includes(selectedId ?? '')
             return (
               <Cell
                 key={i}
+                onClick={() => handleBarClick(bin.experimentIds)}
                 fill={isSelected ? '#2563eb' : '#93c5fd'}
               />
             )
