@@ -7,10 +7,12 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts'
+import type { ScatterShapeProps } from 'recharts'
 import { useAppStore } from '../store/useAppStore'
 import { FieldSelect } from './shared/FieldSelect'
 import { ALL_FIELDS, getValue } from '../utils/fields'
 import { allExperiments } from '../data/dataset'
+import { applyFilters } from '../utils/filters'
 
 export function ScatterplotExplorer() {
   const scatterXField = useAppStore((s) => s.scatterXField)
@@ -19,8 +21,13 @@ export function ScatterplotExplorer() {
   const setScatterYField = useAppStore((s) => s.setScatterYField)
   const selectedExperimentId = useAppStore((s) => s.selectedExperimentId)
   const setSelectedExperiment = useAppStore((s) => s.setSelectedExperiment)
+  const filters = useAppStore((s) => s.filters)
 
   const sameField = scatterXField === scatterYField
+
+  const matchingIds = filters.length > 0
+    ? new Set(applyFilters(allExperiments, filters).map((e) => e.id))
+    : null
 
   const points = allExperiments.map((exp) => ({
     id: exp.id,
@@ -28,9 +35,10 @@ export function ScatterplotExplorer() {
     y: getValue(exp, scatterYField),
   }))
 
-  function handleClick(data: { id: string } | undefined) {
-    if (!data) return
-    setSelectedExperiment(selectedExperimentId === data.id ? null : data.id)
+  function handleClick(data: unknown) {
+    const id = (data as { id?: string } | undefined)?.id
+    if (!id) return
+    setSelectedExperiment(selectedExperimentId === id ? null : id)
   }
 
   return (
@@ -94,20 +102,22 @@ export function ScatterplotExplorer() {
           />
           <Scatter
             data={points}
-            onClick={(data) => handleClick(data as { id: string } | undefined)}
-            shape={(props: Record<string, unknown>) => {
+            onClick={(data) => handleClick(data)}
+            shape={(props: ScatterShapeProps & { payload?: { id: string } }) => {
               const cx = props.cx as number
               const cy = props.cy as number
-              const payload = props.payload as { id: string }
-              const isSelected = payload.id === selectedExperimentId
+              const payload = props.payload
+              const isSelected = payload?.id === selectedExperimentId
+              const isFiltered = matchingIds !== null && !matchingIds.has(payload?.id ?? '')
               return (
                 <circle
                   cx={cx}
                   cy={cy}
                   r={isSelected ? 8 : 5}
-                  fill={isSelected ? '#2563eb' : '#93c5fd'}
-                  stroke={isSelected ? '#1d4ed8' : '#3b82f6'}
+                  fill={isSelected ? '#2563eb' : isFiltered ? '#e5e7eb' : '#93c5fd'}
+                  stroke={isSelected ? '#1d4ed8' : isFiltered ? '#d1d5db' : '#3b82f6'}
                   strokeWidth={1}
+                  opacity={isFiltered ? 0.4 : 1}
                   style={{ cursor: 'pointer' }}
                 />
               )
