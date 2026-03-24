@@ -3,6 +3,7 @@ import { Header } from './Header'
 import { ScatterplotExplorer } from '../ScatterplotExplorer'
 import { FilterBuilder } from '../FilterBuilder'
 import { ExperimentTable } from '../ExperimentTable'
+import { HistogramControls } from '../HistogramControls'
 import { useAppStore } from '../../store/useAppStore'
 
 type Tab = 'scatterplot' | 'table' | 'histogram'
@@ -75,7 +76,9 @@ export function AppShell() {
           </div>
         )}
         {activeTab === 'histogram' && (
-          <div data-testid="tab-histogram" />
+          <div data-testid="tab-histogram">
+            <HistogramControls />
+          </div>
         )}
       </main>
     </div>
