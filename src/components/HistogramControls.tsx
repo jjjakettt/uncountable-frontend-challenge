@@ -13,22 +13,18 @@ function dataRangeForOutput(field: OutputFieldName): { min: number; max: number 
 
 export function HistogramControls() {
   const [outputField, setOutputField] = useState<OutputFieldName>(OUTPUT_FIELDS[0])
-  const initialRange = dataRangeForOutput(OUTPUT_FIELDS[0])
-  const [outputMin, setOutputMin] = useState<number>(initialRange.min)
-  const [outputMax, setOutputMax] = useState<number>(initialRange.max)
-  const [dataMin, setDataMin] = useState<number>(initialRange.min)
-  const [dataMax, setDataMax] = useState<number>(initialRange.max)
+  const [outputMin, setOutputMin] = useState(() => dataRangeForOutput(OUTPUT_FIELDS[0]).min)
+  const [outputMax, setOutputMax] = useState(() => dataRangeForOutput(OUTPUT_FIELDS[0]).max)
   const [inputField, setInputField] = useState<InputFieldName>(INPUT_FIELDS[0])
   const [binCount, setBinCount] = useState<number>(10)
   const [excludeZeros, setExcludeZeros] = useState<boolean>(true)
 
+  const { min: dataMin, max: dataMax } = dataRangeForOutput(outputField)
   const config = { outputField, outputMin, outputMax, inputField, binCount, excludeZeros }
 
   function handleOutputFieldChange(field: OutputFieldName) {
     const { min, max } = dataRangeForOutput(field)
     setOutputField(field)
-    setDataMin(min)
-    setDataMax(max)
     setOutputMin(min)
     setOutputMax(max)
   }
