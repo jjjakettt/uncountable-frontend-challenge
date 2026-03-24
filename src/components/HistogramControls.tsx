@@ -5,10 +5,11 @@ import { allExperiments } from '../data/dataset'
 import { FieldSelect } from './shared/FieldSelect'
 import { RangeSlider } from './shared/RangeSlider'
 import { InputHistogram } from './InputHistogram'
+import { arrayMin, arrayMax } from '../utils/math'
 
 function dataRangeForOutput(field: OutputFieldName): { min: number; max: number } {
   const vals = allExperiments.map((e) => e.outputs[field])
-  return { min: Math.floor(Math.min(...vals)), max: Math.ceil(Math.max(...vals)) }
+  return { min: Math.floor(arrayMin(vals)), max: Math.ceil(arrayMax(vals)) }
 }
 
 export function HistogramControls() {

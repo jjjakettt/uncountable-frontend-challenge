@@ -16,6 +16,7 @@ import { ALL_FIELDS, getValue, isInputField } from '../utils/fields'
 import { allExperiments } from '../data/dataset'
 import { applyFilters } from '../utils/filters'
 import { linearRegression } from '../utils/regression'
+import { arrayMin, arrayMax } from '../utils/math'
 
 type ScatterPoint = { id: string; x: number; y: number }
 
@@ -64,8 +65,8 @@ export function ScatterplotExplorer() {
   const regressionLineData = useMemo(() => {
     if (!regression) return null
     const xs = activePoints.map((p) => p.x)
-    const xMin = Math.min(...xs)
-    const xMax = Math.max(...xs)
+    const xMin = arrayMin(xs)
+    const xMax = arrayMax(xs)
     return [
       { x: xMin, y: regression.slope * xMin + regression.intercept },
       { x: xMax, y: regression.slope * xMax + regression.intercept },

@@ -5,6 +5,7 @@ import { ALL_FIELDS, getValue, isInputField } from '../utils/fields'
 import { allExperiments } from '../data/dataset'
 import { applyFilters } from '../utils/filters'
 import type { Filter, FilterOperator } from '../types/index'
+import { arrayMin, arrayMax } from '../utils/math'
 
 const OPERATORS: { value: FilterOperator; label: string }[] = [
   { value: '>', label: '>' },
@@ -14,7 +15,7 @@ const OPERATORS: { value: FilterOperator; label: string }[] = [
 
 function fieldRange(field: Filter['field']): [number, number] {
   const vals = allExperiments.map((e) => getValue(e, field))
-  return [Math.min(...vals), Math.max(...vals)]
+  return [arrayMin(vals), arrayMax(vals)]
 }
 
 function fieldNonZeroMin(field: Filter['field']): number | null {
