@@ -4,6 +4,7 @@ import { ScatterplotExplorer } from '../ScatterplotExplorer'
 import { FilterBuilder } from '../FilterBuilder'
 import { ExperimentTable } from '../ExperimentTable'
 import { HistogramControls } from '../HistogramControls'
+import { ExperimentDetailPanel } from '../ExperimentDetailPanel'
 import { useAppStore } from '../../store/useAppStore'
 
 type Tab = 'scatterplot' | 'table' | 'histogram'
@@ -81,6 +82,7 @@ export function AppShell() {
           </div>
         )}
       </main>
+      <ExperimentDetailPanel />
     </div>
   )
 }
