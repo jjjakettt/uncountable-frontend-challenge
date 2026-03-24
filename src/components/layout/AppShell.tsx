@@ -1,6 +1,8 @@
 import { useState } from 'react'
 import { Header } from './Header'
 import { ScatterplotExplorer } from '../ScatterplotExplorer'
+import { FilterBuilder } from '../FilterBuilder'
+import { ExperimentTable } from '../ExperimentTable'
 
 type Tab = 'scatterplot' | 'table' | 'histogram'
 
@@ -43,7 +45,10 @@ export function AppShell() {
           </div>
         )}
         {activeTab === 'table' && (
-          <div data-testid="tab-table" />
+          <div data-testid="tab-table" className="flex flex-col gap-4">
+            <FilterBuilder />
+            <ExperimentTable />
+          </div>
         )}
         {activeTab === 'histogram' && (
           <div data-testid="tab-histogram" />
