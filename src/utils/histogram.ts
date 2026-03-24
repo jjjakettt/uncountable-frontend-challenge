@@ -1,4 +1,5 @@
 import type { ExperimentRow, HistogramBin, HistogramConfig } from '../types/index.ts'
+import { arrayMin, arrayMax } from './math'
 
 export function computeHistogram(experiments: ExperimentRow[], config: HistogramConfig): HistogramBin[] {
   const { outputField, outputMin, outputMax, inputField, binCount, excludeZeros } = config
@@ -18,8 +19,9 @@ export function computeHistogram(experiments: ExperimentRow[], config: Histogram
     return buildEmptyBins(binCount)
   }
 
-  const min = Math.min(...entries.map(e => e.value))
-  const max = Math.max(...entries.map(e => e.value))
+  const vals = entries.map(e => e.value)
+  const min = arrayMin(vals)
+  const max = arrayMax(vals)
   const range = max - min
 
   // Build bins

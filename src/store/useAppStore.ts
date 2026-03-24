@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import type { Filter, FieldName } from '../types/index'
 import { INPUT_FIELDS, OUTPUT_FIELDS, getValue } from '../utils/fields'
+import { arrayMin, arrayMax } from '../utils/math'
 import { allExperiments } from '../data/dataset'
 
 interface AppState {
@@ -31,7 +32,7 @@ export const useAppStore = create<AppState>((set) => ({
         (() => {
           const field = INPUT_FIELDS[0]
           const vals = allExperiments.map((e) => getValue(e, field))
-          const mid = (Math.min(...vals) + Math.max(...vals)) / 2
+          const mid = (arrayMin(vals) + arrayMax(vals)) / 2
           return { id: crypto.randomUUID(), field, operator: '>' as const, value: mid }
         })(),
       ],
