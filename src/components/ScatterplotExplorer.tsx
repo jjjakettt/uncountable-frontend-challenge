@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import {
   ComposedChart,
   Scatter,
@@ -16,6 +17,8 @@ import { allExperiments } from '../data/dataset'
 import { applyFilters } from '../utils/filters'
 import { linearRegression } from '../utils/regression'
 
+type ScatterPoint = { id: string; x: number; y: number }
+
 export function ScatterplotExplorer() {
   const scatterXField = useAppStore((s) => s.scatterXField)
   const scatterYField = useAppStore((s) => s.scatterYField)
@@ -27,27 +30,39 @@ export function ScatterplotExplorer() {
 
   const sameField = scatterXField === scatterYField
 
-  const matchingIds = filters.length > 0
-    ? new Set(applyFilters(allExperiments, filters).map((e) => e.id))
-    : null
+  const matchingIds = useMemo(
+    () => filters.length > 0
+      ? new Set(applyFilters(allExperiments, filters).map((e) => e.id))
+      : null,
+    [filters]
+  )
 
-  const points = allExperiments.map((exp) => ({
-    id: exp.id,
-    x: getValue(exp, scatterXField),
-    y: getValue(exp, scatterYField),
-  }))
+  const points = useMemo(
+    () => allExperiments.map((exp) => ({
+      id: exp.id,
+      x: getValue(exp, scatterXField),
+      y: getValue(exp, scatterYField),
+    })),
+    [scatterXField, scatterYField]
+  )
 
-  const visiblePoints = isInputField(scatterXField)
-    ? points.filter((p) => p.x !== 0)
-    : points
+  const visiblePoints = useMemo(
+    () => isInputField(scatterXField) ? points.filter((p) => p.x !== 0) : points,
+    [points, scatterXField]
+  )
 
-  const activePoints = matchingIds !== null
-    ? visiblePoints.filter((p) => matchingIds.has(p.id))
-    : visiblePoints
+  const activePoints = useMemo(
+    () => matchingIds !== null ? visiblePoints.filter((p) => matchingIds.has(p.id)) : visiblePoints,
+    [visiblePoints, matchingIds]
+  )
 
-  const regression = !sameField ? linearRegression(activePoints) : null
+  const regression = useMemo(
+    () => !sameField ? linearRegression(activePoints) : null,
+    [sameField, activePoints]
+  )
 
-  const regressionLineData = regression ? (() => {
+  const regressionLineData = useMemo(() => {
+    if (!regression) return null
     const xs = activePoints.map((p) => p.x)
     const xMin = Math.min(...xs)
     const xMax = Math.max(...xs)
@@ -55,11 +70,9 @@ export function ScatterplotExplorer() {
       { x: xMin, y: regression.slope * xMin + regression.intercept },
       { x: xMax, y: regression.slope * xMax + regression.intercept },
     ]
-  })() : null
+  }, [regression, activePoints])
 
-  function handleClick(data: unknown) {
-    const id = (data as { id?: string } | undefined)?.id
-    if (!id) return
+  function handleClick(id: string) {
     setSelectedExperiment(selectedExperimentId === id ? null : id)
   }
 
@@ -120,7 +133,7 @@ export function ScatterplotExplorer() {
             cursor={{ strokeDasharray: '3 3' }}
             content={({ payload }) => {
               if (!payload?.length) return null
-              const d = payload[0].payload as { id: string; x: number; y: number }
+              const d = payload[0].payload as ScatterPoint
               return (
                 <div className="rounded border border-gray-200 bg-white px-3 py-2 text-xs shadow">
                   <div className="font-medium text-gray-700">{d.id}</div>
@@ -136,10 +149,9 @@ export function ScatterplotExplorer() {
           />
           <Scatter
             data={visiblePoints}
-            onClick={(data) => handleClick(data)}
             shape={(props: ScatterShapeProps & { payload?: { id: string } }) => {
-              const cx = props.cx as number
-              const cy = props.cy as number
+              const cx = props.cx ?? 0
+              const cy = props.cy ?? 0
               const payload = props.payload
               const isSelected = payload?.id === selectedExperimentId
               const isFiltered = matchingIds !== null && !matchingIds.has(payload?.id ?? '')
@@ -153,6 +165,7 @@ export function ScatterplotExplorer() {
                   strokeWidth={1}
                   opacity={isFiltered ? 0.4 : 1}
                   style={{ cursor: 'pointer' }}
+                  onClick={() => { if (payload?.id) handleClick(payload.id) }}
                 />
               )
             }}

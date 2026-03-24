@@ -119,7 +119,7 @@ function FilterRow({ filter, onUpdate, onRemove }: {
 
 export function FilterBuilder() {
   const { filters, addFilter, updateFilter, removeFilter, clearFilters } = useAppStore()
-  const matchCount = applyFilters(allExperiments, filters).length
+  const matchCount = useMemo(() => applyFilters(allExperiments, filters).length, [filters])
 
   return (
     <div className="flex flex-col gap-2">

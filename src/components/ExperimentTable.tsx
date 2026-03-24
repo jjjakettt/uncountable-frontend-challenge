@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useAppStore } from '../store/useAppStore'
 import { allExperiments } from '../data/dataset'
 import { applyFilters } from '../utils/filters'
@@ -6,8 +7,10 @@ import { INPUT_FIELDS, OUTPUT_FIELDS, getValue } from '../utils/fields'
 const ALL_COLUMNS = [...INPUT_FIELDS, ...OUTPUT_FIELDS]
 
 export function ExperimentTable() {
-  const { filters, selectedExperimentId, setSelectedExperiment } = useAppStore()
-  const filtered = applyFilters(allExperiments, filters)
+  const filters = useAppStore((s) => s.filters)
+  const selectedExperimentId = useAppStore((s) => s.selectedExperimentId)
+  const setSelectedExperiment = useAppStore((s) => s.setSelectedExperiment)
+  const filtered = useMemo(() => applyFilters(allExperiments, filters), [filters])
 
   return (
     <div className="flex flex-col gap-3">
