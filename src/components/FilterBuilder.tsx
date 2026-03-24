@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import { useAppStore } from '../store/useAppStore'
 import { FieldSelect } from './shared/FieldSelect'
-import { ALL_FIELDS, getValue } from '../utils/fields'
+import { ALL_FIELDS, getValue, isInputField } from '../utils/fields'
 import { allExperiments } from '../data/dataset'
 import { applyFilters } from '../utils/filters'
 import type { Filter, FilterOperator } from '../types/index'
@@ -17,13 +17,22 @@ function fieldRange(field: Filter['field']): [number, number] {
   return [Math.min(...vals), Math.max(...vals)]
 }
 
+function fieldNonZeroMin(field: Filter['field']): number | null {
+  const vals = allExperiments.map((e) => getValue(e, field)).filter((v) => v !== 0)
+  return vals.length > 0 ? Math.min(...vals) : null
+}
+
 function FilterRow({ filter, onUpdate, onRemove }: {
   filter: Filter
   onUpdate: (patch: Partial<Filter>) => void
   onRemove: () => void
 }) {
   const [min, max] = useMemo(() => fieldRange(filter.field), [filter.field])
-  const step = (max - min) / 200
+  const sliderMin = useMemo(() => {
+    if (!isInputField(filter.field)) return min
+    return fieldNonZeroMin(filter.field) ?? min
+  }, [filter.field, min])
+  const step = (max - sliderMin) / 200
 
   function handleOperatorChange(op: FilterOperator) {
     if (op === 'range') {
@@ -33,7 +42,10 @@ function FilterRow({ filter, onUpdate, onRemove }: {
     }
   }
 
+  const showZeroWarning = isInputField(filter.field) && filter.value === 0
+
   return (
+    <div className="flex flex-col gap-1">
     <div className="flex items-center gap-3">
       <FieldSelect
         fields={ALL_FIELDS}
@@ -54,7 +66,7 @@ function FilterRow({ filter, onUpdate, onRemove }: {
         <div className="flex items-center gap-2">
           <input
             type="range"
-            min={min}
+            min={sliderMin}
             max={filter.valueTo ?? max}
             step={step}
             value={filter.value}
@@ -78,7 +90,7 @@ function FilterRow({ filter, onUpdate, onRemove }: {
         <>
           <input
             type="range"
-            min={min}
+            min={sliderMin}
             max={max}
             step={step}
             value={filter.value}
@@ -95,6 +107,12 @@ function FilterRow({ filter, onUpdate, onRemove }: {
       >
         Remove
       </button>
+    </div>
+    {showZeroWarning && (
+      <p role="alert" className="text-yellow-700 text-xs">
+        0 means ingredient not used
+      </p>
+    )}
     </div>
   )
 }

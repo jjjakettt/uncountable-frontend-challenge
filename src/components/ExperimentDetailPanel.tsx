@@ -13,6 +13,7 @@ export function ExperimentDetailPanel() {
 
   return (
     <div
+      data-testid="detail-panel"
       className="fixed right-0 top-0 z-50 flex h-screen w-80 flex-col bg-white shadow-2xl transition-transform duration-300"
       style={{ transform: experiment ? 'translateX(0)' : 'translateX(100%)' }}
     >

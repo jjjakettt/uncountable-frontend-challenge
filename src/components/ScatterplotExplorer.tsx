@@ -1,6 +1,7 @@
 import {
-  ScatterChart,
+  ComposedChart,
   Scatter,
+  Line,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -10,9 +11,10 @@ import {
 import type { ScatterShapeProps } from 'recharts'
 import { useAppStore } from '../store/useAppStore'
 import { FieldSelect } from './shared/FieldSelect'
-import { ALL_FIELDS, getValue } from '../utils/fields'
+import { ALL_FIELDS, getValue, isInputField } from '../utils/fields'
 import { allExperiments } from '../data/dataset'
 import { applyFilters } from '../utils/filters'
+import { linearRegression } from '../utils/regression'
 
 export function ScatterplotExplorer() {
   const scatterXField = useAppStore((s) => s.scatterXField)
@@ -35,6 +37,26 @@ export function ScatterplotExplorer() {
     y: getValue(exp, scatterYField),
   }))
 
+  const visiblePoints = isInputField(scatterXField)
+    ? points.filter((p) => p.x !== 0)
+    : points
+
+  const activePoints = matchingIds !== null
+    ? visiblePoints.filter((p) => matchingIds.has(p.id))
+    : visiblePoints
+
+  const regression = !sameField ? linearRegression(activePoints) : null
+
+  const regressionLineData = regression ? (() => {
+    const xs = activePoints.map((p) => p.x)
+    const xMin = Math.min(...xs)
+    const xMax = Math.max(...xs)
+    return [
+      { x: xMin, y: regression.slope * xMin + regression.intercept },
+      { x: xMax, y: regression.slope * xMax + regression.intercept },
+    ]
+  })() : null
+
   function handleClick(data: unknown) {
     const id = (data as { id?: string } | undefined)?.id
     if (!id) return
@@ -43,6 +65,9 @@ export function ScatterplotExplorer() {
 
   return (
     <div className="space-y-4">
+      {regressionLineData && (
+        <span data-testid="regression-active" className="sr-only" aria-hidden="true" />
+      )}
       <div className="flex items-center gap-6">
         <FieldSelect
           fields={ALL_FIELDS}
@@ -67,8 +92,9 @@ export function ScatterplotExplorer() {
         </div>
       )}
 
+      <div className="relative">
       <ResponsiveContainer width="100%" height={500}>
-        <ScatterChart margin={{ top: 8, right: 24, bottom: 40, left: 40 }}>
+        <ComposedChart margin={{ top: 8, right: 24, bottom: 40, left: 56 }}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis
             type="number"
@@ -80,7 +106,15 @@ export function ScatterplotExplorer() {
             type="number"
             dataKey="y"
             name={scatterYField}
-            label={{ value: scatterYField, angle: -90, position: 'insideLeft', offset: 10 }}
+            domain={['auto', 'auto']}
+            tickMargin={8}
+            label={{
+              value: scatterYField,
+              angle: -90,
+              position: 'insideLeft',
+              offset: -40,
+              style: { textAnchor: 'middle' },
+            }}
           />
           <Tooltip
             cursor={{ strokeDasharray: '3 3' }}
@@ -101,7 +135,7 @@ export function ScatterplotExplorer() {
             }}
           />
           <Scatter
-            data={points}
+            data={visiblePoints}
             onClick={(data) => handleClick(data)}
             shape={(props: ScatterShapeProps & { payload?: { id: string } }) => {
               const cx = props.cx as number
@@ -123,8 +157,32 @@ export function ScatterplotExplorer() {
               )
             }}
           />
-        </ScatterChart>
+          {regressionLineData && (
+            <Line
+              id="regression-line"
+              data={regressionLineData}
+              type="linear"
+              dataKey="y"
+              dot={false}
+              activeDot={false}
+              stroke="#ef4444"
+              strokeWidth={2}
+              strokeDasharray="6 3"
+              isAnimationActive={false}
+              legendType="none"
+            />
+          )}
+        </ComposedChart>
       </ResponsiveContainer>
+      {regression && (
+        <div
+          data-testid="r2-annotation"
+          className="absolute right-8 top-2 rounded bg-white/80 px-2 py-1 text-xs text-gray-600 shadow-sm"
+        >
+          r² = {regression.r2.toFixed(2)}
+        </div>
+      )}
+      </div>
     </div>
   )
 }
