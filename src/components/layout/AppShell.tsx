@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Header } from './Header'
+import { ScatterplotExplorer } from '../ScatterplotExplorer'
 
 type Tab = 'scatterplot' | 'table' | 'histogram'
 
@@ -37,7 +38,9 @@ export function AppShell() {
 
       <main className="flex-1 p-6">
         {activeTab === 'scatterplot' && (
-          <div data-testid="tab-scatterplot" />
+          <div data-testid="tab-scatterplot">
+            <ScatterplotExplorer />
+          </div>
         )}
         {activeTab === 'table' && (
           <div data-testid="tab-table" />
